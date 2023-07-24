@@ -1,0 +1,255 @@
+{{define "main"}}
+<html lang="en-US">
+<head>
+  <meta charset="UTF-8">
+  <title>gfyGET</title>
+    <script type="application/javascript">
+        function sendFile(file,num) {
+			if (file.size > 8*1024*1024){alert("File Too Big : "+file.name);return;};
+            const uri = "/upload";
+            const xhr = new XMLHttpRequest();
+            const fd = new FormData();
+		   var statusP = document.getElementById('sts'+num);
+		   var btnP = document.getElementById('btn'+num);
+		   var addCollBtn = document.getElementById('addToCol'+num);
+
+            xhr.open("POST", uri, true);
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+//                    alert(xhr.responseText); // handle response.
+				  try{statusP.innerHTML = "localhost:4000"+xhr.responseText;}
+				  catch(err) {
+					document.getElementById("demo").innerHTML = err.message;
+				  };
+				  //btnP.innerHTML = xhr.responseText;
+				  try{btnP.setAttribute("value", xhr.responseText);}
+				  catch(err) {
+					document.getElementById("demo").innerHTML = err.message;
+				  };
+			  	  
+				  try{addCollBtn.setAttribute("onclick", 'AddToColl("yix", "' + xhr.responseText+'");');}
+				  catch(err) {
+					document.getElementById("demo").innerHTML = err.message;
+				  };
+
+                } else {
+				  try{statusP.innerHTML = xhr.responseText;}
+				  catch(err) {
+					document.getElementById("demo").innerHTML = err.message;
+				  };
+			  }
+            };
+            fd.append('myFile', file);
+            // Initiate a multipart/form-data upload
+            xhr.send(fd);
+        }
+    </script>
+	<div id="demo"></div>
+<style>
+.previewImg {
+	max-width: 300px;
+	max-height: 280px;
+	text-align: center;
+	height: 100%;
+}
+.previewContainer {
+	max-width: 1000px;
+	text-align: left;
+	margin: 0 auto;
+}
+.filePreviewCon {
+    justify-content: flex-end;
+    display: flex;
+    max-height: 280px;
+    flex-direction: row;
+    margin: 1rem auto;
+    border: 1px solid #333;
+}
+.videocon {
+    display: flex;
+    max-width: 300px;
+    max-height: 280px;
+    width: 100%;
+    justify-content: center;
+    background: black;
+}
+main {
+	max-width: 1000px;
+	margin: 0 auto;
+}
+.upform {
+    max-width: 1000px;
+    padding: 1rem;
+    margin: 1rem auto;
+    background: whitesmoke;
+    text-align: center;
+}
+.filedesc {
+    padding: 1rem;
+    width: 100%;
+}
+.vizaviz {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 1.6rem;
+}
+.fullw {
+	width: 100%;
+}
+input[type="text"] {
+	padding : 6px;
+}
+.radios {
+	
+}
+.copy {
+    border: 1px solid #000;
+    padding: 0.8rem;
+    width: fit-content;
+}
+.copy:after {
+	content: 'Copy';
+	margin-left: 0.8rem;
+    background: aliceblue;
+    padding: 0.4rem;
+	}
+</style>
+
+		<style>
+     button {
+         font-size: 1.2rem;
+         background-color: #fff;
+         border: 1px solid #aaa;
+         border-radius: 4px;
+     }
+     .sqrBtn {
+         width: 34px;
+         height: 34px;
+         margin: 3px;
+     }
+		</style>
+</head>
+<body>
+
+		<form class="upform" enctype="multipart/form-data"  method="POST" action="/upload"  id="formAjax">
+		<input type="file" name="fileAjax" id="fileElem" multiple size="10" onchange="handleFiles()" accept="video/*" style="display:none" >
+		<button href="#" id="fileSelect">Select some files</button>
+		<p><strong>Tip:</strong> Use the Control or the Shift key to select multiple files.</p>
+		<span id="filewarning"></span>
+	</form>
+		<div class="previewContainer" id="previews"><p>No files selected!</p></div>
+		
+
+<script>
+
+const fileSelect = document.getElementById("fileSelect"),
+  fileElem = document.getElementById("fileElem"),
+  previews = document.getElementById("previews");
+
+fileSelect.addEventListener(
+  "click",
+  (e) => {
+    if (fileElem) {
+      fileElem.click();
+    }
+    e.preventDefault(); // prevent navigation to "#"
+  },
+  false,
+);
+
+fileElem.addEventListener("change", handleFiles, false);
+
+function handleFiles() {
+  {
+    previews.innerHTML = "";
+	const filesArray = this.files;
+    for (let i = 0; i < this.files.length; i++) {
+      const democon = document.createElement("article");
+	  democon.setAttribute("class", "filePreviewCon");
+	  democon.setAttribute("id", "democon");
+      previews.appendChild(democon);
+      const videocon = document.createElement("section");
+	  videocon.setAttribute("class", "videocon");
+      const img = document.createElement("video");
+      img.src = URL.createObjectURL(this.files[i]);
+	  img.setAttribute("onmouseover", "this.play();");
+	  img.setAttribute("onmouseout", "this.pause();");
+	  img.setAttribute("class", "previewImg");
+      img.onload = () => {
+        URL.revokeObjectURL(img.src);
+      };
+      videocon.appendChild(img);
+      democon.appendChild(videocon);
+      const info2 = document.createElement("section");
+	  info2.setAttribute("class", "filedesc");
+      info2.innerHTML = `<strong> ${i+1} . file : <\/strong><span>size:  ${formatBytes(this.files[i].size)} bytes<\/span><br><div><input type='text' maxlength='140' class='fullw' placeholder='Add Title' value=${this.files[i].name}  name='vidtitle'><\/div><br><div><input type='text' maxlength='200' class='fullw' name='vidtags' placeholder='Add Tags...' value=''><\/div><br><input type='radio' checked="checked" class='radios' name='vis${i}' id='vispub'/><label for='vispub'>Public <\/label><input type='radio' class='radios' name='vis${i}' id='vispriv'/><label for='vispriv'>Private <\/label>`;
+      democon.appendChild(info2);
+      const stts = document.createElement("p");
+	  stts.setAttribute("class", "copy");
+	  stts.innerHTML= "Not Uploaded";
+	  stts.setAttribute("id", "sts"+i);
+	  stts.setAttribute("onclick", "navigator.clipboard.writeText(this.innerHTML);alert('Content copied to clipboard');");
+      info2.appendChild(stts);
+	  
+	const info1 = document.createElement("section");
+	  info1.setAttribute("class", "vizaviz");
+      info1.innerHTML = `<button class='sqrBtn' id='addToCol${i}'>&#10133;<\/button><br>`;
+      democon.appendChild(info1);
+	  
+      const dell = document.createElement("button");
+	  dell.setAttribute("id", "btn"+i);
+	  dell.setAttribute("class", "sqrBtn");
+	  dell.innerHTML = "&#9851;";
+	  dell.setAttribute("onclick", "this.parentNode.parentNode.remove();AskDelete(this.value);");
+      info1.appendChild(dell);
+    }
+	for (let i=0; i<filesArray.length; i++) {
+			sendFile(filesArray[i],i);
+     }
+  }
+}
+</script>
+
+<script>
+
+function AddToColl(collName, gifname) {
+const a2c = new XMLHttpRequest();
+a2c.open("POST", "/addtocoll", true);
+a2c.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+a2c.onreadystatechange = () => {
+  if (a2c.readyState === XMLHttpRequest.DONE && a2c.status === 200) {
+	alert(a2c.responseText)
+  }
+};
+a2c.send("collection="+ collName +"&gifname="+ gifname);
+}
+
+
+function AskDelete(url) {
+const xhrdel = new XMLHttpRequest();
+xhrdel.open("DELETE", "/post/"+url, true);
+
+// Send the proper header information along with the request
+xhrdel.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+xhrdel.onreadystatechange = () => {
+  // Call a function when the state changes.
+  if (xhrdel.readyState === XMLHttpRequest.DONE && xhrdel.status === 200) {
+    // Request finished. Do processing here.
+	alert(xhrdel.responseText)
+  }
+};
+//xhrdel.send("user=guest&lorem=ipsum");
+// xhr.send(new Int8Array());
+// xhr.send(document);
+}
+
+function formatBytes(a,b=2){if(!+a)return"0 Bytes";const c=0>b?0:b,d=Math.floor(Math.log(a)/Math.log(1024));return`${parseFloat((a/Math.pow(1024,d)).toFixed(c))} ${["Bytes","KB","MB","GB"][d]}`}
+</script>
+<!--img onmouseover="bigImg(this)" src="smiley.gif" alt="Smiley"-->
+</body>
+</html>
+
+{{ end }}
