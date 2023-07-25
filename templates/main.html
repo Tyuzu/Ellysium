@@ -1,4 +1,4 @@
-{{define "nvmmmain"}}
+{{define "main"}}
 <html lang="en-US">
 <head>
   <meta charset="UTF-8">
@@ -103,8 +103,8 @@ input[type="text"] {
 	</form>
 		<div class="previewContainer" id="previews"><p>No files selected!</p></div>
 <script>
-function Updater(num) {
-var isPriv
+function Updater(file,num) {
+
 fileName = document.getElementById("title"+num).value;
 fileTags = document.getElementById("tags"+num).value;
 //isPriv = document.getElementById("vis"+num).value;
@@ -124,6 +124,7 @@ xhr.onreadystatechange = () => {
 xhr.send("filetitle="+fileName+"&filetags="+fileTags+"&isprivate="+isPriv);
 // xhr.send(new Int8Array());
 // xhr.send(document);
+sendFile(file,num);
 }
 </script>		
 
@@ -140,17 +141,14 @@ xhr.send("filetitle="+fileName+"&filetags="+fileTags+"&isprivate="+isPriv);
             xhr.open("POST", uri, true);
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4 && xhr.status === 200) {
-//                    alert(xhr.responseText); // handle response.
 				  try{statusP.innerHTML = "localhost:4000"+xhr.responseText;}
 				  catch(err) {
 					document.getElementById("demo").innerHTML = err.message;
 				  };
-				  //btnP.innerHTML = xhr.responseText;
 				  try{btnP.setAttribute("value", xhr.responseText);}
 				  catch(err) {
 					document.getElementById("demo").innerHTML = err.message;
 				  };
-			  	  
 				  try{addCollBtn.setAttribute("onclick", 'AddToColl("yix", "' + xhr.responseText+'");');}
 				  catch(err) {
 					document.getElementById("demo").innerHTML = err.message;
@@ -164,7 +162,6 @@ xhr.send("filetitle="+fileName+"&filetags="+fileTags+"&isprivate="+isPriv);
 			  }
             };
             fd.append('myFile', file);
-            // Initiate a multipart/form-data upload
             xhr.send(fd);
         }
     </script>
@@ -236,12 +233,12 @@ function handleFiles() {
 	  sup.setAttribute("id", "btn"+i);
 	  sup.setAttribute("class", "sqrBtn");
 	  sup.innerHTML = "U";
-	  sup.setAttribute("onclick", "Updater("+i+");");
+	  sup.setAttribute("onclick", "Updater("+filesArray[i]+","+i+");");
       info1.appendChild(sup);
-    }
+    }/*
 	for (let i=0; i<filesArray.length; i++) {
 		sendFile(filesArray[i],i, );
-     }
+     }*/
   }
 }
 </script>
@@ -264,20 +261,12 @@ a2c.send("collection="+ collName +"&gifname="+ gifname);
 function AskDelete(url) {
 const xhrdel = new XMLHttpRequest();
 xhrdel.open("DELETE", "/post/"+url, true);
-
-// Send the proper header information along with the request
 xhrdel.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-
 xhrdel.onreadystatechange = () => {
-  // Call a function when the state changes.
   if (xhrdel.readyState === XMLHttpRequest.DONE && xhrdel.status === 200) {
-    // Request finished. Do processing here.
 	alert(xhrdel.responseText)
   }
 };
-//xhrdel.send("user=guest&lorem=ipsum");
-// xhr.send(new Int8Array());
-// xhr.send(document);
 }
 
 function formatBytes(a,b=2){if(!+a)return"0 Bytes";const c=0>b?0:b,d=Math.floor(Math.log(a)/Math.log(1024));return`${parseFloat((a/Math.pow(1024,d)).toFixed(c))} ${["Bytes","KB","MB","GB"][d]}`}

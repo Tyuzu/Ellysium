@@ -8,11 +8,15 @@ import (
     "github.com/julienschmidt/httprouter"
 )
 
-var maxUploadSize int64
+
+const PORT = "localhost:4000"
+const maxUploadSize = 8 * 1024 * 1024 // 8 mb
 var uploadPath = "./uploads"
 var cssPath = "./css"
+var userPics = "./userpics"
 
-var tmpl = template.Must(template.ParseFS(content, "templates/*.html"))
+var tmpl = template.Must(template.ParseGlob("templates/*.html"))
+
 
 
 func main() {
@@ -25,12 +29,14 @@ func main() {
     router.DELETE("/post/:url", DelPost)
     router.GET("/v/:postid", ViewPost)
     router.POST("/addtocoll", AddToColl)
+    router.POST("/update", Fields)
 
 //--------FileServer--------//
 
 	static := httprouter.New()
 	static.ServeFiles("/files/*filepath", http.Dir(uploadPath))
 	static.ServeFiles("/css/*filepath", http.Dir(cssPath))
+	static.ServeFiles("/usrimg/*filepath", http.Dir(userPics))
 	router.NotFound = static	
 
 //--------Server--------//

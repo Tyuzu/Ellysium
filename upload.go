@@ -33,11 +33,14 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request, _  httprouter.Par
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-
+		fmt.Println(r.FormValue("filetitle"))
+		fmt.Println(r.FormValue("filetags"))
+		fmt.Println(r.FormValue("isprivate"))
+		
 			defer file.Close()
-
 			// Get and print out file size
 			fileSize := fileHeader.Size
+			fmt.Println(fileHeader.Filename)
 //			fmt.Printf("File size (bytes): %v\n", fileSize)
 			// validate file size
 			if fileSize > maxUploadSize {
@@ -99,6 +102,12 @@ func uploadFileHandler(w http.ResponseWriter, r *http.Request, _  httprouter.Par
 				renderError(w, "CANT_WRITE_FILE", http.StatusInternalServerError)
 				return
 			}
+			
+/*
+			rdxHset(fileName, "fileName", r.FormValue("filetitle"))
+			rdxHset(fileName, "fileTags", r.FormValue("filetags"))
+			rdxHset(fileName, "fileVis", r.FormValue("isprivate"))*/
+			
 			go XHRrespond(w,"/v/"+fileName)
 			pics = append(pics, "/files/"+newFileName)
 		}
@@ -116,6 +125,14 @@ func ViewPost(w http.ResponseWriter, r *http.Request, postid httprouter.Params) 
 			tmpl.ExecuteTemplate(w, "head.html", nil)
 			tmpl.ExecuteTemplate(w, "show.html", res)
 		}
+}
+
+
+
+func Fields(w http.ResponseWriter, r *http.Request, postid httprouter.Params) {
+	fmt.Println(r.FormValue("filetitle"))
+	fmt.Println(r.FormValue("filetags"))
+	fmt.Println(r.FormValue("isprivate"))
 }
 
 
